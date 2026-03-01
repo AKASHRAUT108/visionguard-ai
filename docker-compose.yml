@@ -1,0 +1,10 @@
+version: '3.8'
+services:
+  web:
+    build: .
+    ports:
+      - "7860:7860"
+    environment:
+      - HF_TOKEN=${HF_TOKEN}
+    volumes:
+      - ./data:/app/data
