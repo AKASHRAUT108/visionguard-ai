@@ -9,6 +9,15 @@ import numpy as np
 from .models.classifier import DefectClassifier
 from .models.segmenter import Segmenter
 from .utils.gradcam import generate_gradcam
+from .models.root_cause_bert import RootCauseClassifier
+from .models.clip_fusion import CLIPFusion
+
+
+# Initialize models
+classifier = DefectClassifier()
+segmenter = Segmenter()
+root_cause_clf = RootCauseClassifier()
+clip_fusion = CLIPFusion()
 
 app = FastAPI()
 
@@ -34,12 +43,17 @@ async def analyze(file: UploadFile = File(...), text: str = Form("")):
     # Segmentation (if available)
     mask = segmenter.segment(image)
 
-    # For now, ignore text and CLIP (will add later)
+    # Root cause analysis
+    root_cause_result = root_cause_clf.predict(text)
+
+    # CLIP fusion
+    similarity = clip_fusion.fuse(image, text)
 
     return JSONResponse({
         "defect": defect_result,
-        "mask": mask,  # can be large; consider sending as image later
-        # "heatmap": heatmap.tolist()  # if we had Grad-CAM
+        "mask": mask,  # can be large; you may want to compress later
+        "root_cause": root_cause_result,
+        "clip_similarity": similarity
     })
 
 # Optional separate endpoints for testing
@@ -56,3 +70,4 @@ async def segment(file: UploadFile = File(...)):
     image = Image.open(io.BytesIO(image_data)).convert("RGB")
     mask = segmenter.segment(image)
     return JSONResponse({"mask": mask})
+
