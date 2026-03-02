@@ -1,3 +1,31 @@
-<input type="file" id="imageInput" accept="image/*">
-<textarea id="textInput" placeholder="Enter sensor notes or observations..."></textarea>
-<button onclick="analyze()">Analyze</button>
+<!DOCTYPE html>
+<html>
+<head>
+    <title>VisionGuard AI</title>
+    <link rel="stylesheet" href="/static/style.css">
+</head>
+<body>
+    <h1>VisionGuard AI</h1>
+    <div class="container">
+        <div class="analysis">
+            <h2>Analyze Product</h2>
+            <input type="file" id="imageInput" accept="image/*">
+            <textarea id="textInput" placeholder="Enter sensor notes or observations..."></textarea>
+            <button onclick="analyze()">Analyze</button>
+            <div id="results"></div>
+        </div>
+        <!-- <div class="chat">
+            <h2>Corrective Action Assistant</h2>
+            <input type="text" id="questionInput" placeholder="Ask a question...">
+            <button onclick="ask()">Ask</button>
+            <div id="chatAnswer"></div>
+        </div> -->
+        <div class="prediction">
+            <h2>Failure Probability</h2>
+            <button onclick="getPrediction()">Predict</button>
+            <div id="predictionResult"></div>
+        </div>
+    </div>
+    <script src="/static/script.js"></script>
+</body>
+</html>

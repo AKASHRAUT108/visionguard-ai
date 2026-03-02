@@ -8,24 +8,22 @@ import numpy as np
 
 from .models.classifier import DefectClassifier
 from .models.segmenter import Segmenter
-from .utils.gradcam import generate_gradcam
 from .models.root_cause_bert import RootCauseClassifier
 from .models.clip_fusion import CLIPFusion
+from .models.lstm_predictor import FailurePredictor
+from .utils.gradcam import generate_gradcam
 
+app = FastAPI()
+
+# Mount static files (frontend)
+app.mount("/static", StaticFiles(directory="app/static"), name="static")
 
 # Initialize models
 classifier = DefectClassifier()
 segmenter = Segmenter()
 root_cause_clf = RootCauseClassifier()
 clip_fusion = CLIPFusion()
-
-app = FastAPI()
-
-# Mount static files (frontend)
-app.mount("/static", StaticFiles(directory="app/static"), name="static")
-# Initialize models (lazy loading)
-classifier = DefectClassifier()
-segmenter = Segmenter()
+failure_predictor = FailurePredictor()
 
 @app.get("/")
 async def read_root():
@@ -51,10 +49,15 @@ async def analyze(file: UploadFile = File(...), text: str = Form("")):
 
     return JSONResponse({
         "defect": defect_result,
-        "mask": mask,  # can be large; you may want to compress later
+        "mask": mask,
         "root_cause": root_cause_result,
         "clip_similarity": similarity
     })
+
+@app.get("/predict_failure")
+async def predict_failure():
+    prob = failure_predictor.predict()
+    return {"failure_probability": prob}
 
 # Optional separate endpoints for testing
 @app.post("/classify")
@@ -70,4 +73,3 @@ async def segment(file: UploadFile = File(...)):
     image = Image.open(io.BytesIO(image_data)).convert("RGB")
     mask = segmenter.segment(image)
     return JSONResponse({"mask": mask})
-
